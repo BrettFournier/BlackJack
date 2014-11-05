@@ -11,8 +11,6 @@ public class FraGui3 extends JFrame {
     private JLabel[] arLblDealer;
     private Deck deck;
     private JPanel panBoard;
-    private JPanel panTitle;
-    private JPanel panStart;
     private JTextField txtMoney;
     private int nTotal = 1000;
     private int nBet = 0;
@@ -24,16 +22,20 @@ public class FraGui3 extends JFrame {
     private String sBet;
     private JLabel lblMoney;
     private JLabel lblBet;
-    private JLabel lblMenu;
     private JButton btnHit;
     private JButton btnStand;
     private JButton btnNewGame;
     private JButton btnBet;
-    private JButton btnStart;
+    private JRadioButton btn5 = new JRadioButton("$5");
+    private JRadioButton btn10 = new JRadioButton("$10");
+    private JRadioButton btn20 = new JRadioButton("$20");
+    private JRadioButton btn50 = new JRadioButton("$50");
+    private JRadioButton btn100 = new JRadioButton("$100");
     private boolean bInGame = false;
 
     public static void main(String[] args) {
         FraGui3 myFrame = new FraGui3();
+        PanMenu panMenu = new PanMenu();
         myFrame.setPreferredSize(new Dimension(1000, 400));
         myFrame.pack();
         myFrame.getContentPane().setBackground(Color.green);
@@ -44,40 +46,8 @@ public class FraGui3 extends JFrame {
     }
 
     public FraGui3() {
-        // to initalize the GUI
-        menu();
+        init();
     }//constructor
-
-    // initialize GUI components
-    public void menu() {
-        panTitle = new JPanel();
-        panStart = new JPanel();
-        add(panTitle, BorderLayout.CENTER);
-        add(panStart, BorderLayout.SOUTH);
-        panTitle.setBackground(Color.black);
-        panStart.setBackground(Color.black);
-        lblMenu = new JLabel("Black Jack");
-        btnStart = new JButton("Play Game!");
-        Font menufont = new Font("Copperplate Gothic Bold", Font.PLAIN, 28);
-        lblMenu.setFont(menufont);
-        lblMenu.setForeground(Color.red);
-        panTitle.add(lblMenu);
-        panStart.add(btnStart);
-        btnStart.addActionListener(new PlayActionListener());
-    }
-
-    class PlayActionListener implements ActionListener {
-
-        public void actionPerformed(ActionEvent e) {
-            {
-                
-                panTitle.remove(lblMenu);
-                panStart.remove(btnStart);
-                init();
-                newGame();
-            }
-        }
-    }
 
     public void init() {
         setSize(1000, 400);
@@ -91,7 +61,7 @@ public class FraGui3 extends JFrame {
         panBoard = new JPanel(new GridLayout(2, 6)); // 2 players - up to 6 cards each
         panInput = new JPanel(); // defaults to FlowLayout
         panEast = new JPanel();
-        //panSEast = new JPanel();
+        ButtonGroup betgroup = new ButtonGroup();
         add(lblStatus, BorderLayout.NORTH);
         add(panEast, BorderLayout.EAST);
         add(panBoard, BorderLayout.CENTER);
@@ -133,34 +103,35 @@ public class FraGui3 extends JFrame {
         btnBet = new JButton("Bet");
         btnBet.addActionListener(new BetActionListener());
         panInput.add(btnBet);
+        btn5.setBackground(Color.green);
+        btn10.setBackground(Color.green);
+        btn20.setBackground(Color.green);
+        btn50.setBackground(Color.green);
+        btn100.setBackground(Color.green);
 
-        panEast.add(txtMoney);
+        betgroup.add(btn5);
+        betgroup.add(btn10);
+        betgroup.add(btn20);
+        betgroup.add(btn50);
+        betgroup.add(btn100);
+        panEast.add(btn5);
+        panEast.add(btn10);
+        panEast.add(btn20);
+        panEast.add(btn50);
+        panEast.add(btn100);
         panEast.add(lblMoney);
         panEast.add(lblBet);
         sBet = "0";
         sMoney = "Money: $" + nTotal;
-
-
     }
 
     public void newGame() {
-        // clear the board
-
-        for (int i = 0; i < 6; i++) {
-            arLblPlayer[i].setIcon(null);
-            arLblDealer[i].setIcon(null);
-        }
-
         // initialize the deck and hands (or do this in a newGame method)
-        arLblDealer[0].setText("Dealer's Cards");
-        arLblPlayer[0].setText("Your Cards");
-
         bInGame = true;
         deck = new Deck();
         playerHand = new BlackjackHand();
         dealerHand = new BlackjackHand();
         deck.shuffle();
-
         //deals cards
         dealerHand.addCard(deck.dealCard());
         dealerHand.addCard(deck.dealCard());
@@ -236,9 +207,8 @@ public class FraGui3 extends JFrame {
                     nTotal = nTotal + nBet;
                     nBet = 0;
                 } else {
-                    sMessage = "You have " + playerHand.getBlackjackValue() + ".  Hit or Stand?";
+                    sMessage = "Hit or Stand?";
                 }
-
                 redraw();
             }
         }
@@ -292,7 +262,11 @@ public class FraGui3 extends JFrame {
     class NewgameActionListener implements ActionListener {
 
         public void actionPerformed(ActionEvent e) {
-            txtMoney.enable();
+            btn5.setEnabled(true);
+            btn10.setEnabled(true);
+            btn20.setEnabled(true);
+            btn50.setEnabled(true);
+            btn100.setEnabled(true);
             panInput.remove(btnHit);
             panInput.remove(btnStand);
             panInput.remove(btnNewGame);
@@ -301,12 +275,20 @@ public class FraGui3 extends JFrame {
             lblBet.setText(sBet);
             sMoney = "Money: $" + nTotal;
             lblMoney.setText(sMoney);
+            sMessage ="Please place your bet";
+            lblStatus.setText(sMessage);
             if (bInGame == true) {
                 sMessage = "You still have to finish this game!";
                 redraw();
                 return;
             } else {
-                newGame();
+                //clear board
+                for (int i = 0; i < 6; i++) {
+                    arLblPlayer[i].setIcon(null);
+                    arLblDealer[i].setIcon(null);
+                }
+              //  arLblDealer[0].setText("Dealer's Cards");
+               // arLblPlayer[0].setText("Your Cards");
             }
         }
     }
@@ -315,8 +297,23 @@ public class FraGui3 extends JFrame {
 
         public void actionPerformed(ActionEvent e) {
             if (e.getSource() == btnBet) {
-                sBet = txtMoney.getText();
-                nBet = Integer.parseInt(sBet);
+                newGame();
+                if (btn5.isSelected() == true) {
+                    nBet = 5;
+                }
+                if (btn10.isSelected() == true) {
+                    nBet = 10;
+                }
+                if (btn20.isSelected() == true) {
+                    nBet = 20;
+                }
+                if (btn50.isSelected() == true) {
+                    nBet = 50;
+                }
+                if (btn100.isSelected() == true) {
+                    nBet = 100;
+                }
+
 
                 if (nTotal == 0) {
                     sMessage = "Sorry game over, you're all out of money.";
@@ -330,7 +327,11 @@ public class FraGui3 extends JFrame {
                     panInput.add(btnHit);
                     panInput.add(btnStand);
                     panInput.add(btnNewGame);
-                    txtMoney.disable();
+                    btn5.setEnabled(false);
+                    btn10.setEnabled(false);
+                    btn20.setEnabled(false);
+                    btn50.setEnabled(false);
+                    btn100.setEnabled(false);
                     lblBet.setText("Your bet is $" + nBet);
                     sMessage = "You have " + playerHand.getBlackjackValue() + ".  Hit or Stand?";
                     lblStatus.setText(sMessage);
